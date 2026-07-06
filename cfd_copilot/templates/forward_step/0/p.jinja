@@ -1,0 +1,41 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('volScalarField', 'p') }}
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform {{ '%.6g' % fluid.p }};
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform {{ '%.6g' % fluid.p }};
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    bottom
+    {
+        type            symmetryPlane;
+    }
+
+    top
+    {
+        type            symmetryPlane;
+    }
+
+    obstacle
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+{{ foam.footer() }}

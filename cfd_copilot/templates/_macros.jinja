@@ -1,0 +1,20 @@
+{%- macro header(cls, obj) -%}
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | CFD Case Copilot (generated)                    |
+|  \\    /   O peration     | OpenFOAM-compatible (tested on v2412)           |
+|   \\  /    A nd           | DO NOT hand-edit unless you know what you do    |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       {{ cls }};
+    object      {{ obj }};
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+{%- endmacro -%}
+{%- macro footer() -%}
+// ************************************************************************* //
+{%- endmacro -%}

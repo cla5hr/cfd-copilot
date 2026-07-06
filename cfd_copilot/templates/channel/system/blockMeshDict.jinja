@@ -1,0 +1,71 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'blockMeshDict') }}
+
+scale   1;
+
+vertices
+(
+    (0 0 0)
+    ({{ '%.6g' % geometry.length }} 0 0)
+    ({{ '%.6g' % geometry.length }} {{ '%.6g' % geometry.height }} 0)
+    (0 {{ '%.6g' % geometry.height }} 0)
+    (0 0 {{ '%.6g' % geometry.depth }})
+    ({{ '%.6g' % geometry.length }} 0 {{ '%.6g' % geometry.depth }})
+    ({{ '%.6g' % geometry.length }} {{ '%.6g' % geometry.height }} {{ '%.6g' % geometry.depth }})
+    (0 {{ '%.6g' % geometry.height }} {{ '%.6g' % geometry.depth }})
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ({{ mesh.nx }} {{ mesh.ny }} {{ mesh.nz }}) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (2 6 5 1)
+        );
+    }
+    lowerWall
+    {
+        type wall;
+        faces
+        (
+            (1 5 4 0)
+        );
+    }
+    upperWall
+    {
+        type wall;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
+
+{{ foam.footer() }}

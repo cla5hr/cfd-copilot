@@ -1,0 +1,33 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'controlDict') }}
+
+application     icoFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         {{ '%.6g' % control.end_time }};
+
+deltaT          {{ '%.6g' % control.delta_t }};
+
+writeControl    runTime;
+
+writeInterval   {{ '%.6g' % control.write_interval }};
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+{{ foam.footer() }}

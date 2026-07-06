@@ -1,0 +1,7 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'transportProperties') }}
+
+transportModel  Newtonian;
+
+nu              {{ '%.6g' % fluid.nu }};
+
+{{ foam.footer() }}

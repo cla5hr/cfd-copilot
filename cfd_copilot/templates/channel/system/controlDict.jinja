@@ -1,0 +1,33 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'controlDict') }}
+
+application     simpleFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         {{ control.max_iterations }};
+
+deltaT          1;
+
+writeControl    timeStep;
+
+writeInterval   {{ (control.max_iterations // 5) if control.max_iterations >= 5 else 1 }};
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+{{ foam.footer() }}

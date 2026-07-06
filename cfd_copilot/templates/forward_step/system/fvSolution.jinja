@@ -1,0 +1,27 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'fvSolution') }}
+
+solvers
+{
+    "(rho|rhoU|rhoE)"
+    {
+        solver          diagonal;
+    }
+
+    U
+    {
+        solver          smoothSolver;
+        smoother        GaussSeidel;
+        nSweeps         2;
+        tolerance       1e-09;
+        relTol          0.01;
+    }
+
+    "(e|h)"
+    {
+        $U;
+        tolerance       1e-10;
+        relTol          0;
+    }
+}
+
+{{ foam.footer() }}

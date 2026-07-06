@@ -1,0 +1,39 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('volScalarField', 'nut') }}
+
+dimensions      [0 2 -1 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    inlet
+    {
+        type            calculated;
+        value           uniform 0;
+    }
+
+    outlet
+    {
+        type            calculated;
+        value           uniform 0;
+    }
+
+    lowerWall
+    {
+        type            nutkWallFunction;
+        value           uniform 0;
+    }
+
+    upperWall
+    {
+        type            nutkWallFunction;
+        value           uniform 0;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+{{ foam.footer() }}

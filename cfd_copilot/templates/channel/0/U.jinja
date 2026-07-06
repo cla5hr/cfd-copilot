@@ -1,0 +1,36 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('volVectorField', 'U') }}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform ({{ '%.6g' % velocity }} 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform ({{ '%.6g' % velocity }} 0 0);
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            noSlip;
+    }
+
+    upperWall
+    {
+        type            noSlip;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+{{ foam.footer() }}

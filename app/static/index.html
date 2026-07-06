@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CFD Case Copilot</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121c2e;
+      --panel2: #182338;
+      --text: #e8eef7;
+      --muted: #9fb0c8;
+      --accent: #3dd6c6;
+      --accent2: #5b9dff;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #132038, var(--bg) 45%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header {
+      background: linear-gradient(135deg, rgba(61,214,198,0.15), rgba(91,157,255,0.12));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    header h1 { margin: 0 0 0.35rem; font-size: 2rem; }
+    header p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: 1fr 320px; gap: 1rem; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--accent); }
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1rem; }
+    .chip {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 0.75rem 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .primary {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #041018;
+    }
+    .secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    label { display: flex; align-items: center; gap: 0.5rem; margin: 0.6rem 0; color: var(--muted); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .metric {
+      background: var(--panel2);
+      border-radius: 12px;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+    }
+    .metric .k { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .metric .v { font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; }
+    .log { max-height: 260px; overflow: auto; }
+    .log-item {
+      padding: 0.55rem 0.75rem;
+      border-left: 3px solid var(--accent);
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 0.45rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .badge.ok { background: rgba(74,222,128,0.15); color: var(--ok); }
+    .badge.fail { background: rgba(251,191,36,0.15); color: var(--warn); }
+    pre {
+      background: var(--panel2);
+      border-radius: 10px;
+      padding: 0.75rem;
+      overflow: auto;
+      font-size: 0.85rem;
+    }
+    .hidden { display: none; }
+    #statusText { color: var(--muted); margin-top: 0.75rem; min-height: 1.2rem; }
+    canvas { max-height: 320px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🌀 CFD Case Copilot</h1>
+      <p>Describe your flow in plain English. We build the OpenFOAM case, check the mesh, run the solver, and show you how it converged.</p>
+    </header>
+
+    <div class="grid">
+      <main>
+        <section class="card">
+          <h2>Your flow description</h2>
+          <div class="chips" id="examples"></div>
+          <textarea id="prompt" placeholder="Example: Lid-driven cavity at 1 m/s with kinematic viscosity 0.01"></textarea>
+          <div class="actions" style="margin-top: 1rem;">
+            <button class="primary" id="runBtn">▶ Run simulation</button>
+            <button class="secondary" id="meshBtn">Mesh only</button>
+          </div>
+          <div id="statusText"></div>
+        </section>
+
+        <section class="card hidden" id="resultsCard">
+          <h2>Results</h2>
+          <div id="statusBadge"></div>
+          <div class="metrics" id="metrics"></div>
+          <div class="card" style="background: var(--panel2);">
+            <h2>Convergence chart</h2>
+            <canvas id="residualChart"></canvas>
+          </div>
+          <div class="card" style="background: var(--panel2);">
+            <h2>Activity log</h2>
+            <div class="log" id="log"></div>
+          </div>
+          <div class="card" style="background: var(--panel2);">
+            <h2>ParaView</h2>
+            <pre id="paraviewCmd"></pre>
+          </div>
+        </section>
+      </main>
+
+      <aside>
+        <section class="card">
+          <h2>Settings</h2>
+          <label><input type="checkbox" id="useLlm" checked /> Use AI (Ollama)</label>
+          <label>Output folder<input type="text" id="outDir" value="runs" style="width:100%;margin-top:0.35rem;padding:0.5rem;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);" /></label>
+        </section>
+        <section class="card">
+          <h2>System</h2>
+          <div id="health">Checking…</div>
+        </section>
+        <section class="card">
+          <h2>Tip</h2>
+          <p style="color:var(--muted);line-height:1.5;margin:0;font-size:0.92rem;">
+            <strong>Run simulation</strong> = mesh + solve (you get time folders).<br><br>
+            <strong>Mesh only</strong> = quick check, no solver.
+          </p>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const EXAMPLES = [
+      ["Cavity", "Lid-driven cavity at 1 m/s with kinematic viscosity 0.01"],
+      ["Channel", "Turbulent channel flow at 10 m/s using k-omega SST, Re 50000"],
+      ["Supersonic", "Supersonic flow over a forward step at Mach 3, air at 300 K and 101325 Pa"],
+    ];
+
+    let chart;
+
+    const el = (id) => document.getElementById(id);
+    const examples = el("examples");
+    EXAMPLES.forEach(([label, text]) => {
+      const b = document.createElement("button");
+      b.className = "chip";
+      b.textContent = label;
+      b.title = text;
+      b.onclick = () => { el("prompt").value = text; };
+      examples.appendChild(b);
+    });
+    el("prompt").value = EXAMPLES[0][1];
+
+    async function checkHealth() {
+      try {
+        const r = await fetch("/health");
+        const d = await r.json();
+        el("health").innerHTML = d.openfoam_available
+          ? `<span style="color:var(--ok)">● OpenFOAM ready</span><br><small style="color:var(--muted)">${d.foam_bashrc || ""}</small>`
+          : `<span style="color:var(--warn)">● OpenFOAM not found</span>`;
+      } catch {
+        el("health").innerHTML = `<span style="color:var(--warn)">● API offline</span>`;
+      }
+    }
+    checkHealth();
+
+    function setBusy(busy, msg) {
+      el("runBtn").disabled = busy;
+      el("meshBtn").disabled = busy;
+      el("statusText").textContent = msg || "";
+    }
+
+    function renderMetrics(data) {
+      const spec = data.spec || {};
+      const val = data.validation || {};
+      const run = data.run || {};
+      const items = [
+        ["Status", data.status],
+        ["Flow type", spec.case_type || "—"],
+        ["Speed", spec.velocity != null ? `${spec.velocity} m/s` : "—"],
+        ["Mesh cells", val.n_cells != null ? val.n_cells.toLocaleString() : "—"],
+      ];
+      el("metrics").innerHTML = items.map(([k,v]) =>
+        `<div class="metric"><div class="k">${k}</div><div class="v">${v}</div></div>`
+      ).join("");
+      el("statusBadge").innerHTML = data.status === "success"
+        ? `<span class="badge ok">Simulation complete</span>`
+        : `<span class="badge fail">Needs attention</span>`;
+      el("log").innerHTML = (data.log || []).map(line =>
+        `<div class="log-item">${line.startsWith("repair") || line.startsWith("warning") ? "⚠️" : "✅"} ${line}</div>`
+      ).join("");
+      if (data.case_dir && spec.name) {
+        el("paraviewCmd").textContent = `paraview ${data.case_dir}/${spec.name}.foam`;
+      }
+      renderChart(run.residual_history || {});
+    }
+
+    function renderChart(history) {
+      const ctx = el("residualChart");
+      const datasets = [];
+      const colors = ["#3dd6c6", "#5b9dff", "#f472b6", "#fbbf24", "#a78bfa", "#fb7185"];
+      let i = 0;
+      for (const [field, points] of Object.entries(history)) {
+        datasets.push({
+          label: field,
+          data: points.map(([x, y]) => ({ x, y })),
+          borderColor: colors[i % colors.length],
+          backgroundColor: colors[i % colors.length] + "55",
+          tension: 0.25,
+          pointRadius: 2,
+        });
+        i++;
+      }
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "line",
+        data: { datasets },
+        options: {
+          responsive: true,
+          scales: {
+            x: { type: "linear", title: { display: true, text: "Time / iteration", color: "#9fb0c8" }, ticks: { color: "#9fb0c8" }, grid: { color: "rgba(255,255,255,0.06)" } },
+            y: { type: "logarithmic", title: { display: true, text: "Residual", color: "#9fb0c8" }, ticks: { color: "#9fb0c8" }, grid: { color: "rgba(255,255,255,0.06)" } },
+          },
+          plugins: { legend: { labels: { color: "#e8eef7" } } },
+        },
+      });
+    }
+
+    async function submit(validateOnly) {
+      const prompt = el("prompt").value.trim();
+      if (!prompt) return alert("Please enter a flow description.");
+      setBusy(true, validateOnly ? "Building mesh…" : "Running simulation… this may take a minute.");
+      el("resultsCard").classList.add("hidden");
+      try {
+        const r = await fetch("/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt,
+            use_llm: el("useLlm").checked,
+            validate_only: validateOnly,
+            run_solver: !validateOnly,
+            out_dir: el("outDir").value || "runs",
+          }),
+        });
+        const data = await r.json();
+        el("resultsCard").classList.remove("hidden");
+        renderMetrics(data);
+        setBusy(false, data.run?.summary || data.validation?.summary || "Done.");
+      } catch (e) {
+        setBusy(false, "Error: " + e.message);
+      }
+    }
+
+    el("runBtn").onclick = () => submit(false);
+    el("meshBtn").onclick = () => submit(true);
+  </script>
+</body>
+</html>

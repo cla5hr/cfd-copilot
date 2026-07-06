@@ -1,0 +1,25 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('volScalarField', 'p') }}
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    movingWall
+    {
+        type            zeroGradient;
+    }
+
+    fixedWalls
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+{{ foam.footer() }}

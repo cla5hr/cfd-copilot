@@ -1,0 +1,38 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('volScalarField', 'epsilon') }}
+
+dimensions      [0 2 -3 0 0 0 0];
+
+internalField   uniform {{ '%.6g' % turb.epsilon }};
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform {{ '%.6g' % turb.epsilon }};
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            epsilonWallFunction;
+        value           uniform {{ '%.6g' % turb.epsilon }};
+    }
+
+    upperWall
+    {
+        type            epsilonWallFunction;
+        value           uniform {{ '%.6g' % turb.epsilon }};
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+{{ foam.footer() }}

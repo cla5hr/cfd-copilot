@@ -1,0 +1,14 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'turbulenceProperties') }}
+
+simulationType      RAS;
+
+RAS
+{
+    RASModel        {{ turbulence }};
+
+    turbulence      on;
+
+    printCoeffs     on;
+}
+
+{{ foam.footer() }}

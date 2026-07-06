@@ -1,0 +1,39 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'controlDict') }}
+
+application     rhoCentralFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         {{ '%.6g' % control.end_time }};
+
+deltaT          {{ '%.6g' % control.delta_t }};
+
+writeControl    adjustable;
+
+writeInterval   {{ '%.6g' % control.write_interval }};
+
+purgeWrite      10;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+adjustTimeStep  yes;
+
+maxCo           0.2;
+
+maxDeltaT       1;
+
+{{ foam.footer() }}

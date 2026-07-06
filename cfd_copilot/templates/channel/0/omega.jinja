@@ -1,0 +1,38 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('volScalarField', 'omega') }}
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform {{ '%.6g' % turb.omega }};
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform {{ '%.6g' % turb.omega }};
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            omegaWallFunction;
+        value           uniform {{ '%.6g' % turb.omega }};
+    }
+
+    upperWall
+    {
+        type            omegaWallFunction;
+        value           uniform {{ '%.6g' % turb.omega }};
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+{{ foam.footer() }}

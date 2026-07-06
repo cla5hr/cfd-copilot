@@ -1,0 +1,32 @@
+{% import '_macros.jinja' as foam %}{{ foam.header('dictionary', 'thermophysicalProperties') }}
+
+thermoType
+{
+    type            hePsiThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          hConst;
+    equationOfState perfectGas;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        molWeight       {{ '%.6g' % fluid.molWeight }};
+    }
+    thermodynamics
+    {
+        Cp              {{ '%.6g' % Cp }};
+        Hf              0;
+    }
+    transport
+    {
+        mu              {{ '%.6g' % fluid.mu }};
+        Pr              {{ '%.6g' % fluid.Pr }};
+    }
+}
+
+{{ foam.footer() }}
