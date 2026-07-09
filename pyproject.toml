@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cfd-copilot"
+version = "0.1.0"
+description = "An agentic OpenFOAM case copilot: natural language -> validated, runnable CFD cases."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Sashank Talluri" }]
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.6",
+    "jinja2>=3.1",
+    "typer>=0.12",
+    "rich>=13.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+agent = [
+    "langchain>=0.2.0",
+    "langchain-core>=0.2.0",
+    "langchain-community>=0.2.0",
+    "langchain-ollama>=0.1.0",
+    "langgraph>=0.2.0",
+    "faiss-cpu>=1.8.0",
+]
+api = ["fastapi>=0.111", "uvicorn[standard]>=0.30", "streamlit>=1.36"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+cfd-copilot = "cfd_copilot.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["cfd_copilot*"]
+
+[tool.setuptools.package-data]
+cfd_copilot = ["templates/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
